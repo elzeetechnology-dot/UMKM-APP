@@ -3,26 +3,45 @@ import { computed } from 'vue'
 import { useTransactionStore } from '../stores/transaction'
 import ReportCards from '../components/ReportCards.vue'
 import SalesChart from '../components/SalesChart.vue'
+import type { Transaction, CartItem } from '../stores/transaction'
 
 const txStore = useTransactionStore()
 
 const totalOmzet = computed(() =>
-  txStore.transactions.reduce((sum, t) => sum + t.total, 0)
+  txStore.transactions.reduce(
+    (sum: number, t: Transaction) => sum + t.total,
+    0
+  )
 )
 
-const totalTransaksi = computed(() => txStore.transactions.length)
+const totalTransaksi = computed(
+  () => txStore.transactions.length
+)
 
 const totalItem = computed(() =>
   txStore.transactions.reduce(
-    (sum, t) =>
-      sum + t.items.reduce((i, it) => i + it.qty, 0),
+    (sum: number, t: Transaction) =>
+      sum +
+      t.items.reduce(
+        (i: number, it: CartItem) => i + it.qty,
+        0
+      ),
     0
   )
 )
 
 // dummy chart harian
-const labels = txStore.transactions.map((_, i) => `T${i + 1}`)
-const values = txStore.transactions.map(t => t.total)
+const labels = computed(() =>
+  txStore.transactions.map(
+    (_: Transaction, i: number) => `T${i + 1}`
+  )
+)
+
+const values = computed(() =>
+  txStore.transactions.map(
+    (t: Transaction) => t.total
+  )
+)
 </script>
 
 <template>

@@ -1,40 +1,52 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useUiStore = defineStore('ui', {
-  state: () => ({
-    sidebarOpen: false,
-    darkMode: false, // ✅ WAJIB ADA
-  }),
+export const useUiStore = defineStore('ui', () => {
+  // STATE
+  const sidebarOpen = ref(false)
+  const darkMode = ref(false)
 
-  actions: {
-    toggleSidebar() {
-      this.sidebarOpen = !this.sidebarOpen
-    },
+  // ACTIONS
+  const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value
+  }
 
-    closeSidebar() {
-      this.sidebarOpen = false
-    },
+  const closeSidebar = () => {
+    sidebarOpen.value = false
+  }
 
-    loadTheme() {
-      const saved = localStorage.getItem('theme')
-      this.darkMode = saved === 'dark'
-      this.applyTheme()
-    },
+  const loadTheme = () => {
+    const saved = localStorage.getItem('theme')
+    darkMode.value = saved === 'dark'
+    applyTheme()
+  }
 
-    toggleTheme() {
-      this.darkMode = !this.darkMode
-      localStorage.setItem(
-        'theme',
-        this.darkMode ? 'dark' : 'light'
-      )
-      this.applyTheme()
-    },
+  const toggleTheme = () => {
+    darkMode.value = !darkMode.value
+    localStorage.setItem(
+      'theme',
+      darkMode.value ? 'dark' : 'light'
+    )
+    applyTheme()
+  }
 
-    applyTheme() {
-      document.documentElement.classList.toggle(
-        'dark',
-        this.darkMode
-      )
-    },
-  },
+  const applyTheme = () => {
+    document.documentElement.classList.toggle(
+      'dark',
+      darkMode.value
+    )
+  }
+
+  return {
+    // expose state
+    sidebarOpen,
+    darkMode,
+
+    // expose actions
+    toggleSidebar,
+    closeSidebar,
+    loadTheme,
+    toggleTheme,
+    applyTheme,
+  }
 })

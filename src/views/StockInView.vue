@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useProductStore } from '../stores/products'
 import { useStockStore } from '../stores/stock'
 import { useSupplierStore } from '../stores/supplier'
+import type { Supplier } from '../stores/supplier'
 
 const productStore = useProductStore()
 const stockStore = useStockStore()
@@ -52,7 +53,9 @@ const supplierId = ref<number>()
         @click="stockStore.addStock(
           productId!,
           qty,
-          supplierStore.suppliers.find(s => s.id === supplierId)
+          supplierStore.suppliers.find(
+  (s: Supplier) => s.id === supplierId
+)
         )"
       >
         Simpan Stok Masuk
