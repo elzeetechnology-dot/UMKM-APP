@@ -3,13 +3,14 @@ import { defineStore } from 'pinia'
 export const useUiStore = defineStore('ui', {
   state: () => ({
     sidebarOpen: false,
-    darkMode: false,
+    darkMode: false, // ✅ WAJIB ADA
   }),
 
   actions: {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen
     },
+
     closeSidebar() {
       this.sidebarOpen = false
     },
@@ -22,18 +23,18 @@ export const useUiStore = defineStore('ui', {
 
     toggleTheme() {
       this.darkMode = !this.darkMode
-      localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
+      localStorage.setItem(
+        'theme',
+        this.darkMode ? 'dark' : 'light'
+      )
       this.applyTheme()
     },
 
     applyTheme() {
-      const html = document.documentElement
-      if (this.darkMode) {
-        html.classList.add('dark')
-      } else {
-        html.classList.remove('dark')
-      }
+      document.documentElement.classList.toggle(
+        'dark',
+        this.darkMode
+      )
     },
   },
 })
-
