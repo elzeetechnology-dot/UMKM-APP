@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import { useProductStore } from './products'
 
 export interface CartItem {
@@ -15,69 +16,100 @@ export interface Transaction {
   date: string
 }
 
-export const useTransactionStore = defineStore('transaction', {
-  state: () => ({
-    cart: [] as CartItem[],
-    transactions: [] as Transaction[],
-    lastTransaction: null as Transaction | null,
-  }),
+export const useTransactionStore = defineStore('transaction', () => {
+  // =====================
+  // STATE
+  // =====================
+  const cart = ref<CartItem[]>([])
+  const transactions = ref<Transaction[]>([])
+  const lastTransaction = ref<Transaction | null>(null)
 
-  getters: {
-    cartTotal: (state) =>
-      state.cart.reduce((sum, i) => sum + i.price * i.qty, 0),
-  },
+  // =====================
+  // GETTERS
+  // =====================
+  const cartTotal = computed(() =>
+    cart.value.reduce(
+      (sum: number, i: CartItem) => sum + i.price * i.qty,
+      0
+    )
+  )
 
-  actions: {
-    addToCart(product: { id: number; name: string; price: number }) {
-      const item = this.cart.find(i => i.productId === product.id)
-      if (item) {
-        item.qty++
-      } else {
-        this.cart.push({
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          qty: 1,
-        })
-      }
-    },
+  // =====================
+  // ACTIONS
+  // =====================
+  const addToCart = (product: {
+    id: number
+    name: string
+    price: number
+  }) => {
+    const item = cart.value.find(
+      (i: CartItem) => i.productId === product.id
+    )
 
-    removeFromCart(productId: number) {
-      this.cart = this.cart.filter(i => i.productId !== productId)
-    },
-
-    clearCart() {
-      this.cart = []
-    },
-
-    checkout() {
-      if (this.cart.length === 0) return
-
-      const productStore = useProductStore()
-
-      // kurangi stok
-      this.cart.forEach(item => {
-        const product = productStore.products.find(
-          p => p.id === item.productId
-        )
-        if (product) {
-          product.stock -= item.qty
-        }
+    if (item) {
+      item.qty++
+    } else {
+      cart.value.push({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        qty: 1,
       })
+    }
+  }
 
-      productStore.saveToStorage()
+  const removeFromCart = (productId: number) => {
+    cart.value = cart.value.filter(
+      (i: CartItem) => i.productId !== productId
+    )
+  }
 
-      const tx: Transaction = {
-        id: Date.now(),
-        items: [...this.cart], // clone aman
-        total: this.cartTotal,
-        date: new Date().toISOString(),
+  const clearCart = () => {
+    cart.value = []
+  }
+
+  const checkout = () => {
+    if (cart.value.length === 0) return
+
+    const productStore = useProductStore()
+
+    cart.value.forEach((item: CartItem) => {
+      const product = productStore.products.find(
+        (p: { id: number }) => p.id === item.productId
+      )
+      if (product) {
+        product.stock -= item.qty
       }
+    })
 
-      this.transactions.push(tx)
-      this.lastTransaction = tx
+    productStore.saveToStorage()
 
-      this.clearCart()
-    },
-  },
+    const tx: Transaction = {
+      id: Date.now(),
+      items: [...cart.value],
+      total: cartTotal.value,
+      date: new Date().toISOString(),
+    }
+
+    transactions.value.push(tx)
+    lastTransaction.value = tx
+
+    clearCart()
+  }
+
+  return {
+    // expose state
+    cart,
+    transactions,
+    lastTransaction,
+
+    // expose getters
+    cartTotal,
+
+    // expose actions
+    addToCart,
+    removeFromCart,
+    clearCart,
+    checkout,
+  }
 })
